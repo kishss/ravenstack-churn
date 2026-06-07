@@ -1,91 +1,47 @@
-# RavenStack — Predicting SaaS Churn from Early Activation Behavior
+# RavenStack Churn Analysis
 
-**Which actions a customer takes in their first weeks predict whether they stay or churn — and what onboarding should do about it.**
+I built this project to answer a question that matters to any SaaS business: does it matter *where* your customers come from, or do they all behave the same once they sign up?
 
-A self-directed data analysis project on a simulated B2B SaaS business, built to practice the full workflow: SQL data modeling in PostgreSQL, analysis and modeling in Python, and an interactive dashboard.
+The short answer — it matters a lot.
 
 ---
 
-## The question
+**The question**
 
-In SaaS, keeping a customer is far cheaper than winning a new one, so retention is existential. This project asks one business question:
+Which acquisition channels bring customers who stay, and which bring customers who churn? And what should that mean for how a SaaS company allocates its marketing budget?
 
-> Which behaviors during a customer's first weeks predict whether they ultimately churn, and what should the company change about onboarding as a result?
+**The dataset**
 
-The goal isn't just to *predict* churn, but to find the **"aha moment"**, an early-behavior threshold the business can act on — and quantify the payoff of moving more customers past it.
+RavenStack is a fictional AI-powered collaboration platform — a simulated SaaS business with five related tables covering 500 accounts, their subscription history, daily feature usage, support tickets, and churn events. The data was downloaded from Kaggle and loaded into PostgreSQL for analysis.
 
-## The data
+The raw data files are not stored in this repo. Download them from the Kaggle dataset and place the CSVs in a local `data/` folder.
 
-RavenStack is a fictional AI-powered collaboration platform — a simulated SaaS business spanning five related CSV files (~500 accounts):
+**What I found**
 
-| File | Grain | Role |
-|------|-------|------|
-| `accounts` | one row per customer | metadata + the churn label |
-| `subscriptions` | one row per subscription change | signup clock, plan, MRR (the bridge to usage) |
-| `feature_usage` | daily product logs | the early-behavior signal |
-| `churn_events` | one row per churn event | churn reason, date, reactivations |
-| `support_tickets` | one row per ticket | support experience (a secondary churn driver) |
+Partner-referred customers churn at 14.6%. Event-sourced customers churn at 30.2% — more than double the rate. Organic sits comfortably in the middle at 17.5%.
 
-The raw data is **not** stored in this repo. Download it separately and place the CSVs in a local `data/` folder (which is gitignored).
+| Channel | Customers | Churn Rate |
+|---------|-----------|------------|
+| Partner | 89 | 14.6% |
+| Organic | 114 | 17.5% |
+| Ads | 98 | 23.5% |
+| Other | 103 | 24.3% |
+| Event | 96 | 30.2% |
 
-> **Dataset source:** _paste the Kaggle dataset URL you downloaded from here._
+A chi-square test returned a p-value of 0.079 — just above the conventional 0.05 threshold. The pattern is directionally meaningful, but with ~90–100 customers per channel the sample is small. A larger dataset would likely confirm statistical significance. I'd treat this as strong enough to investigate further, not strong enough to reallocate budgets on its own.
 
-### Key data decisions
-- **Churn label:** `accounts.churn_flag` (the customer-level "did they ultimately leave" signal). `churn_events` is used for the *reason* and *timing* only — the two sources deliberately disagree, and reconciling them is documented in the analysis.
-- **Join path:** `feature_usage` has no `account_id`; it joins to a customer via `subscriptions` (`feature_usage -> subscriptions -> accounts`).
-- **Subscription grain:** each account has ~10 subscription rows (a change history), so MRR is taken from the latest row, never summed across rows.
-- **Activation window:** early behavior is measured relative to `accounts.signup_date`.
+**What it means**
 
-## Approach
+A customer who stays twice as long is worth twice as much, regardless of acquisition cost. If partner-referred customers genuinely retain better, the question isn't just "which channel is cheapest?" but "which channel produces the most lifetime value?" This analysis is the first step toward answering that.
 
-| Stage | Tool | Output |
-|-------|------|--------|
-| Load & explore | SQL (PostgreSQL) | 5 tables loaded, EDA queries |
-| Build the analytical base table | SQL | `account_features` — one row per account, early-behavior columns + churn label |
-| Compare & test | Python (pandas, scipy) | churned vs retained, significance tests |
-| Find the threshold & model | Python (scikit-learn) | activation threshold + interpretable churn model |
-| Visualize | Python / Streamlit | interactive dashboard |
-| Quantify impact | — | estimated retention lift from improving activation |
+The practical recommendation: run a deeper analysis once more data is available, and consider whether event-sourced customers need different onboarding — they may be signing up impulsively at conferences without a strong enough reason to stay.
 
-## Tech stack
+**How it was built**
 
-PostgreSQL · Python (pandas, scikit-learn, matplotlib/seaborn) · Streamlit · Git / GitHub
+The data lives in PostgreSQL. SQL handles the joining, aggregating, and building of the analytical base table. Python (pandas, matplotlib, scipy) handles the visualisation and significance testing. The notebook walks through the full analysis from raw query to chart to test result.
 
-## Project structure
+To run it yourself — load the CSVs into PostgreSQL using `sql/01_create_tables.sql`, then run the queries in order, then open the notebook in `analysis/`.
 
-```
-ravenstack-churn/
-├── README.md
-├── .gitignore
-├── sql/
-│   └── 01_create_and_load.sql      # schema + load
-├── analysis/                        # Python notebooks / scripts
-├── dashboard/                       # Streamlit app
-└── data/                            # raw CSVs (gitignored — download separately)
-```
+**Stack:** PostgreSQL · Python · pandas · matplotlib · scipy · Jupyter · GitHub
 
-## How to run
-
-*(Fleshed out as the project develops.)*
-
-1. Download the dataset and put the CSVs in `data/`.
-2. Create a PostgreSQL database, then from the `data/` folder run the load script:
-   `psql -d your_db -f ../sql/01_create_and_load.sql`
-3. *Analysis and dashboard steps — coming soon.*
-
-## Findings
-
-*Coming soon — the headline insight, key chart, and recommended action will live here.*
-
-## Progress
-
-- [x] Define the business question
-- [x] Explore the data and lock key modeling decisions
-- [x] Load the data into PostgreSQL
-- [ ] Build the `account_features` table
-- [ ] Churn EDA (rate, segments, cohorts)
-- [ ] Compare churned vs retained + significance tests
-- [ ] Find the activation threshold
-- [ ] Build the churn model
-- [ ] Streamlit dashboard
-- [ ] Write up findings + quantify impact
+**Status:** SQL analysis and Python visualisation complete. Streamlit dashboard in progress.
