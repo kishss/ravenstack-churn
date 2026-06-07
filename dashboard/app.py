@@ -13,7 +13,13 @@ data = {
     'churn_rate_pct': [14.6, 17.5, 23.5, 24.3, 30.2]
 }
 df = pd.DataFrame(data)
+selected = st.multiselect(
+    'Select channels to compare:',
+    options=df['referral_source'].tolist(),
+    default=df['referral_source'].tolist()
+)
 
+df = df[df['referral_source'].isin(selected)]
 colors = ['#2ecc71' if x < 20 else '#e74c3c' if x > 25 else '#f39c12'
           for x in df['churn_rate_pct']]
 
