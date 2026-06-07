@@ -10,9 +10,9 @@ A self-directed data analysis project on a simulated B2B SaaS business, built to
 
 In SaaS, keeping a customer is far cheaper than winning a new one, so retention is existential. This project asks one business question:
 
-> Which behaviors during a customer's first weeks predict whether they ultimately churn — and what should the company change about onboarding as a result?
+> Which behaviors during a customer's first weeks predict whether they ultimately churn, and what should the company change about onboarding as a result?
 
-The goal isn't just to *predict* churn, but to find the **"aha moment"** — an early-behavior threshold the business can act on — and quantify the payoff of moving more customers past it.
+The goal isn't just to *predict* churn, but to find the **"aha moment"**, an early-behavior threshold the business can act on — and quantify the payoff of moving more customers past it.
 
 ## The data
 
